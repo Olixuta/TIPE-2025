@@ -1,46 +1,14 @@
- 
 
-# essayer vite fait de faire une modélisation de hamming pour étudier les différents type d'erreurs qui pourrait advenir
-# périodique / en groupe / uniforme 
-
-
-# on envoie les bits d'un même mot dans un ordre différents avec les autres mots pour éviter des erreurs par paquets. 
-
-
-
-
-# par exemple codons huffman pour avoir des codes de base sur une chaine
-
-
-#faire une fonction tri
-
-"""
-def huffman (chaine:str):
-    n = len(chaine) 
-    d= {}
-    for elt in chaine :
-        if not elt in d : 
-            d[elt] = 1 
-        else:
-            d[elt] = d[elt] + 1 
-    print(dict.items(d)) 
-    for key in d: 
-        print(key)
-        
-        
-
-        
-huffman('bbvc')"""
-
-import numpy as np 
 from functools import reduce
 import operator as op
 from random import randint
 import matplotlib as plt
-
+from time import time 
 
 def modifie_i_eme(message:str,i:int,new:str):
-        return message[:i] + new + message[i+1:]
+    if i < 0 or i >= len(message):  # Vérifie que l'indice est valide
+        return message
+    return message[:i] + new + message[i+1:]
 
 
 
@@ -53,7 +21,7 @@ def repr_bin_str(c:str):
     Returns:
         str: représentation binaire de c 
     """
-    return bin(ord(c))[2:]
+    return format((ord(c)),'07b')
 
 
 def codage_binaire(chaine:str):
@@ -82,7 +50,7 @@ def uniforme(bit:str,proba:int):
     """
     p = randint(1, proba)
     if p ==1 : 
-        print('m')
+        #print('m')
         if bit=='0':
             return '1' 
         else:
@@ -105,6 +73,7 @@ def random_change(message:str,loi:str,proba:int,period:int=0,taille_burst:int=0)
         str: le message avec probablement des erreurs 
     """
     l=['uniforme','periodique','burst_uni']
+    #offset_period=randint(0,period-1)
     assert loi in l 
     assert proba>1
     n = len(message)
@@ -114,7 +83,7 @@ def random_change(message:str,loi:str,proba:int,period:int=0,taille_burst:int=0)
             message = modifie_i_eme(message,i,uniforme(message[i],proba))
         elif loi == 'periodique':
             assert period>0 
-            if i%period == 0 : 
+            if i%period == 0: 
                 message = modifie_i_eme(message,i,uniforme(message[i],1))
         elif loi == 'burst_uni' :
             assert taille_burst>0 
@@ -183,7 +152,7 @@ def calculate_parity_positions(r):
     return parity_positions
 
 
-def xor_bit(c1:str,c2:str):# je sais pas si c'est un xor
+def xor_bit(c1:str,c2:str):
     if c1=='1':
         if c2=='1':
             return '0'
@@ -218,21 +187,25 @@ def redondance(message:str,m:int):
     return message
         
 def detecteur_1(message:str,m:int):
-    c = '0'
     n = 2**m
+    compte=0
     for i in range(1,n):
-        c = xor_bit(c,message[i])
-    return c+message[1:]
+        if message[i]==1:
+            compte+=1
+    if compte%2==0:
+        return '0'+message[1:]
+    else:
+        return '1'+message[1:]
 
 
 
 def position_erreur(message:str):
     t=[ i for i,bit in enumerate(message) if bit=='1']
-    return reduce(op.xor , t)
+    return reduce(op.xor , t) if t else 0 
     
 def correction_erreur(message:str): 
     i = position_erreur(message)
-    if i == 0:
+    if i == 0 or i>=len(message):
         return message
     return modifie_i_eme(message,i,uniforme(message[i],1))
 
@@ -245,6 +218,7 @@ def correction_erreur(message:str):
 #love
 #Hello! This is a simple ASCII text with numbers 1234567890 and symbols: @#$%^&*()-_=+[]{};:,.<>?
 
+
 def hamming_encoding(message:str,m:int):
     c= codage_binaire(message)
     l = decoupage_puissance_2(c,m)
@@ -252,12 +226,78 @@ def hamming_encoding(message:str,m:int):
     for i in range(n):
         l[i] = redondance(l[i],m)
         l[i] = detecteur_1(l[i],m)
-    return l 
+    return l
+
+def position_not_p2(m:int):
+    pos=[]
+    for i in range(1,m):
+        if not est_puissance_de_2(i):
+            pos.append(i)
+    return pos
 
 
-l=hamming_encoding('elisa',4)
-print(l)
+def hamming_decoding(l:list):
+    message=''
+    n= len(l)
+    m=len(l[0])
+    pos=position_not_p2(m)
+    for i in range(n):
+        l[i]=correction_erreur(l[i])
+        for indice in pos:
+            message=message + l[i][indice]
+    p = len(message) 
+    h=p//7 # on enleve les bits de 0 qu'on a rajouter à la fin 
+    m=''
+    for i in range(h):
+        c=''
+        for j in range(7):
+            if message[7*i+j]!=' ': # je comprends pas pourquoi ça arrive mais ça n'impacte pas les performances donc why not 
+                c=c+message[7*i+j]
+            else:
+                c=c+'0'
+        if len(c)==7:
+            asci_i = int(c,2)
+            if asci_i!=0:
+                m=m+ chr(asci_i)
+    return m
 
-l[0]= random_change(l[0],'uniforme',50)
-print(l)
-print(position_erreur(l[0]))
+
+    
+""" 
+#m='Elisa je t aime de tout mon coeur tu me manques ma reine' 
+m='Elisa je t aime de tout mon coeur tu me manques ma reine'
+
+def test_hamming(m:str,int:int,taille:int,proba:int):
+    c=0
+    for i in range(int):
+        l=hamming_encoding(m,taille)
+        n=len(l)
+        for i in range(n):
+            l[i]= random_change(l[i],'uniforme',proba)
+        mm=hamming_decoding(l)
+        if mm==m:
+            c=c+1
+    return c
+
+# une chance sur 1000 d'erreur uniforme avec bloc de taille 16 -> 9985
+#elisajetaimedetoutmoncoeurtumemanquesmareinee 16 -> 9976 32 -> 9944 64->9891 128->9770 256->9391 512->9071
+# proba 100 -> (512 -> 360(36secondes) 256(32secondes),16->7637(21secondes) )
+t1=time()
+print(len(m))
+print(test_hamming(m,10000,4,100))
+print(time()-t1)"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
