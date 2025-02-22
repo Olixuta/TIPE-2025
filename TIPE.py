@@ -2,10 +2,20 @@
 from functools import reduce
 import operator as op
 from random import randint
-import matplotlib as plt
+from matplotlib import pyplot as plt
 from time import time 
 
 def modifie_i_eme(message:str,i:int,new:str):
+    """prend une chaine de caractère et renvoie la même chaine avec son ieme caractère changé en new
+
+    Args:
+        message (str): chaine
+        i (int): indice
+        new (str): nouveau caractère
+
+    Returns:
+        str: voir description
+    """
     if i < 0 or i >= len(message):  # Vérifie que l'indice est valide
         return message
     return message[:i] + new + message[i+1:]
@@ -97,10 +107,28 @@ def random_change(message:str,loi:str,proba:int,period:int=0,taille_burst:int=0)
 
 
 
-def est_puissance_de_2(n):
+def est_puissance_de_2(n:int):
+    """vérifie si n est une puissance de 2
+
+    Args:
+        n (int): un entier lambda
+
+    Returns:
+        bool: true ssi n est une puissance de 2
+    """
     return n > 0 and (n & (n - 1)) == 0
 
 def decoupage_puissance_2(chaine:str,m:int): 
+    """découpe un str en bloc de taille 2^m et rajoute des bits de parité pour correspondre au codage de hamming
+
+    Args:
+        chaine (str): str
+        m (int): >=4
+
+    Returns:
+        list: liste de str de taille 2^m 
+    """
+    assert m>=4
     n = len(chaine)
     j = 0 
     p = 2 **m
@@ -139,20 +167,35 @@ def decoupage_puissance_2(chaine:str,m:int):
 
      
 
-def calculate_parity_positions(r):
+def calculate_parity_positions(r:int):
+    """renvoie les positions des bits de parité dans un code de hamming
+
+    Args:
+        r (int): entier
+
+    Returns:
+        list: liste contenant les positions
+    """
     # les positions de la case de redondance i sont ceux telles que le i eme bits de la case représenté est un 1
-    n = 2**r - 1  # Total number of bits in Hamming code (m + r)
-    # A dictionary to store which bits each parity covers
+    n = 2**r - 1  
     parity_positions = {i: [] for i in range(1, r+1)}
     for i in range(1, n + 1):
-        # For each bit position i, check which parity bits cover it
         for p in range(1, r + 1):
-            if (i & (2**(p - 1))):  # Check if bit p covers position i
+            if (i & (2**(p - 1))): 
                 parity_positions[p].append(i)
     return parity_positions
 
 
 def xor_bit(c1:str,c2:str):
+    """xor
+
+    Args:
+        c1 (str): '0' ou '1'
+        c2 (str): '0' ou '1'
+
+    Returns:
+        str: '0' ou '1'
+    """
     if c1=='1':
         if c2=='1':
             return '0'
@@ -167,6 +210,15 @@ def xor_bit(c1:str,c2:str):
 
 
 def parity_pos(pos:list,message:str):
+    """renvoie la somme (xor) des positions des bits '1' dans le message cela permet de trouver la valeur du bits de parité hamming
+
+    Args:
+        pos (list): liste de position
+        message (str): chaine de '0' ou '1'
+
+    Returns:
+        str: '0' ou '1'
+    """
     c = '0'
     for elt in pos:
         c = xor_bit(c,message[elt])
@@ -187,6 +239,15 @@ def redondance(message:str,m:int):
     return message
         
 def detecteur_1(message:str,m:int):
+    """bit 2 detecteur d'erreur hamming
+
+    Args:
+        message (str): str
+        m (int): pour faire une puissance de 2
+
+    Returns:
+        str: le message avec son premier caractère modifier pour hamming
+    """
     n = 2**m
     compte=0
     for i in range(1,n):
@@ -200,10 +261,26 @@ def detecteur_1(message:str,m:int):
 
 
 def position_erreur(message:str):
+    """trouve la position de l'erreur si il n'y en a qu'une
+
+    Args:
+        message (str): str
+
+    Returns:
+        int: indice de l'erreur
+    """
     t=[ i for i,bit in enumerate(message) if bit=='1']
     return reduce(op.xor , t) if t else 0 
     
 def correction_erreur(message:str): 
+    """corrige une erreur 
+
+    Args:
+        message (str): str
+
+    Returns:
+        str: message initial 
+    """
     i = position_erreur(message)
     if i == 0 or i>=len(message):
         return message
@@ -263,7 +340,7 @@ def hamming_decoding(l:list):
 
 
     
-""" 
+
 #m='Elisa je t aime de tout mon coeur tu me manques ma reine' 
 m='Elisa je t aime de tout mon coeur tu me manques ma reine'
 
@@ -282,12 +359,26 @@ def test_hamming(m:str,int:int,taille:int,proba:int):
 # une chance sur 1000 d'erreur uniforme avec bloc de taille 16 -> 9985
 #elisajetaimedetoutmoncoeurtumemanquesmareinee 16 -> 9976 32 -> 9944 64->9891 128->9770 256->9391 512->9071
 # proba 100 -> (512 -> 360(36secondes) 256(32secondes),16->7637(21secondes) )
+#t1=time()
+#print(len(m))
+#print(test_hamming(m,10000,4,100))
+#print(time()-t1)
+mm='Hello! This is a simple ASCII text with numbers 1234567890 and symbols: @#$%^&*()-_=+[]{};:,.<>? do you like me ? my love i miss u how can i forget those night ? '
+x_values=[4,5,6,7,8,9,10,11]
+#y_values=[test_hamming(m,1000,x_values[i],100)for i in range(len(x_values))]
+yy_values=[]
+time_values=[]
 t1=time()
-print(len(m))
-print(test_hamming(m,10000,4,100))
-print(time()-t1)"""
+for i in range(len(x_values)):
+    yy_values.append(test_hamming(mm,1000,x_values[i],1000))
+    t2=time()
+    time_values.append(100*(t2-t1))
+    t1=t2
 
 
+plt.scatter(x_values,yy_values)
+plt.scatter(x_values,time_values)
+plt.show()
 
 
 
