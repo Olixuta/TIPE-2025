@@ -1,32 +1,32 @@
+import numpy as np
+from scipy.interpolate import lagrange
+x=[i for i in range(10)]
+print(x)
+y=[1429,13259,9602.5,359,1,8,3,0,-5,9.0]
+P=(lagrange(x,y))
+x=[i for i in range(1,11)]
+print(x)
+y=[13259,9602.5,359,1,8,3,0,-5,9.0,P(10)]
+P2=lagrange(x,y)
+
+print(P)
+print(P2)
+
+X1=[1,2,3,4,5]
+Y1=[7,8,-3,7,17]
+P1=lagrange(X1,Y1)
+X2=[2,3,4,5,6]
+Y2=[8,-3,7,17,P1(6)]
+P2=lagrange(X2,Y2)
+print(P1)
 
 
-# essayer vite fait de faire une modélisation de hamming pour étudier les différents type d'erreurs qui pourrait advenir
-# périodique / en groupe / uniforme 
 
-
-# on envoie les bits d'un même mot dans un ordre différents avec les autres mots pour éviter des erreurs par paquets. 
-
-
-
-
-# par exemple codons huffman pour avoir des codes de base sur une chaine
-
-
-#faire une fonction tri
-
-
-def huffman (chaine:str):
-    n = len(chaine) 
-    d= {}
-    for elt in chaine :
-        if not elt in d : 
-            d[elt] = 1 
-        else:
-            d[elt] = d[elt] + 1 
-    print(dict.items(d)) 
-    for key in d: 
-        print(key)
-        
-        
-        
-huffman('bbvc')
+# decodage reed solomon
+def random_disapear(l,proba:int):
+    n = len(l)
+    for i in range(n) : 
+        if random() < 1/proba : 
+            l[i]=''
+    return l
+print(P2)
