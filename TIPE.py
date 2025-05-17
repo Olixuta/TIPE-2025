@@ -517,7 +517,7 @@ def correction_perte(l,k):
         else:
             c=c+1
     if c>k:
-        return 'rip'
+        return []
     else:
         x=[]
         y=[]
@@ -534,6 +534,8 @@ def correction_perte(l,k):
             compteur+=1
         #print(x)
         #print(y)
+        if 'False' in y:
+            return []
         P=lagrange(x,y)###
         #print(P)
         l_message=['' for i in range(n-k)]###on retrouve le message originale
@@ -625,7 +627,7 @@ def test_RS(m:str,int:int,proba:int,redondance:int):
         mm=retrouvemessageascii(l2,n)
         if mm==m:
             c=c+1
-        if i%(int/10)==0:
+        if i%(int/10)==0 and False:
             print(i)
     return c 
 
@@ -677,7 +679,7 @@ def test_hamming(m:str,int:int,taille:int,proba:int,perte:int):
     """
     c=0
     corrompu= ''.join(['0' for i in range(2**taille)])
-    for i in range(int+1):
+    for i in range(int):
         l=hamming_encoding(m,taille)
         n=len(l)
         for i in range(n):
@@ -690,35 +692,37 @@ def test_hamming(m:str,int:int,taille:int,proba:int,perte:int):
             c=c+1
     return c
 
-def entrelacement(l:list,p=16):
-    #la liste sort de hamming encoding
-    # entrelace p blocs de p bits (rajouter en paramètre pour modifié)
+def entrelacement(l: list[int], p: int = 16) -> list[int]:
+    """
+    Entrelace les bits de la liste `l` par blocs de `p` bits.
+    Chaque bloc est vu comme une ligne, et l'entrelacement se fait colonne par colonne.
+    """
     n = len(l)
-    m = n //p
-    print('im here')
-    print(m)
-    l_matrice=[[['' for i in range(p)]for k in range(p)] for j in range(1)] # m+n%p
-    dec = 0 
-    for k in range(p):
-        for j in range(m):
-            for i in range(p):
-                l_matrice[j][k][i]+= l[p*j+i][k]
-    print(l_matrice)
-    new_l=['' for i in range(n)]
-    for j in range(m):
-        for i in range(p):
-            for k in range(p):
-                new_l[j+k]+= l_matrice[j][k][i]
-    return new_l 
+    m = n // p  # nombre de blocs
+    # Construire la matrice m x p (m lignes de p bits)
+    # Entrelacement : lire colonne par colonne
+    new_l = []
+    for k in range(m):
+        for i in range(p): # pour chaque colonne
+            mess=''
+            for j in range(p):  # pour chaque ligne
+                mess=mess+l[16*k+j][i]
+            new_l.append(mess)
+            
+    for i in range(16*m,16*m+n%p):
+        new_l.append(l[i])
+    return new_l
+
 
 message='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
 l1=[''.join([chr(j) for i in range(16)]) for j in range(97,97+16)]
 l2=[''.join(format(j,'016b') ) for j in range(16)]
-l1.append('a')
-print(l1)
-print(entrelacement(l1))
+l1= l1 + l1
+#print(l1)
+#print(entrelacement(l1))
 #print(entrelacement(entrelacement(l1)))
-#print((hamming_encoding('10001111010',4)[0]))
+assert entrelacement(entrelacement(l1))==l1
+assert message == hamming_decoding(entrelacement(entrelacement(hamming_encoding(message,4))))
 #01010000111110100
 
 
@@ -847,7 +851,7 @@ print(1000-test_RS(message,1000,100*9/2,3))#19 block de taille plus faible donc 
 
 # test entrelacement Hamming vs RS 
 
-def test_hamming_entrelace(m:str,int:int,taille:int,proba:int): # marche pas vérifie
+def test_hamming_entrelace(m:str,int:int,taille:int,proba:int): # ça marche 
     """fonction de test du codage de hamming dans un canal bruité
     on test int fois la fonction et on compte le nombre de fois où le message est correctement retranscrit 
 
@@ -863,17 +867,17 @@ def test_hamming_entrelace(m:str,int:int,taille:int,proba:int): # marche pas vé
     """
     c=0
     corrompu= ''.join(['0' for i in range(2**taille)]) # si il y avait un 0 pas d'erreur et sinon il la dectetera
-    print(len(corrompu))
-    for i in range(int+1):
+    #print(len(corrompu))
+    for i in range(int):
         l=hamming_encoding(m,taille)
         n=len(l)
-        print(l)
+        #print(l)
         l = entrelacement(l,2**taille)
-        print(l)
+        #print(l)
         for i in range(n):
             if random()<1/proba: # dans le cas d'une perte de donné 
                 l[i]= corrompu
-        print(l)
+        #print(l)
         l = entrelacement(l,2**taille)
         mm=hamming_decoding(l)
         if mm==m:
@@ -881,7 +885,34 @@ def test_hamming_entrelace(m:str,int:int,taille:int,proba:int): # marche pas vé
     return c
 
 
-message='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
+message='This is a simple ASCII text '
 print(len(decoupage_puissance_2(message,4)))
 print(test_hamming_entrelace(message,100,4,10)) 
-# plt.grid() -> avant le plt.show()
+
+message='This is a simple ASCII text '
+#print(len(codage_binaire(message)))
+n=len(codage_binaire(m))//15 + 1 
+l=hamming_encoding(message,3)
+ll=encodage_reed_solomon(message,3,n)
+print(len(l))
+print(len(ll))
+print('test')
+x_values=[]
+y_values=[]
+yy_values=[]
+t0=time()
+nb=1000
+redondance_RS=3
+taille_hamming=4
+for i in range(int(nb/100)):
+    print(i)
+    x_values.append(i)
+    y_values.append(nb-test_hamming_entrelace(message,nb,taille_hamming,4))#18 block de taille 16
+    yy_values.append(nb-test_RS(message,nb,16,redondance_RS))#18 block de taille 64
+print(sum(y_values)/len(y_values))
+print(sum(yy_values)/len(yy_values))
+plt.scatter(x_values,y_values)
+plt.scatter(x_values,yy_values)
+plt.grid()
+plt.show()
+# plt.grid() -> avant le plt.show(
