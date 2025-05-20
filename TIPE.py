@@ -1,6 +1,6 @@
 
 import operator as op
-from random import randint,random
+from random import randint,random,choice
 from matplotlib import pyplot as plt
 from time import time 
 import numpy as np
@@ -24,8 +24,6 @@ def modifie_i_eme(message:str,i:int,new:str):
         return message
     return message[:i] + new + message[i+1:]
 
-
-
 def repr_bin_str(c:str):
     """converti un charactère en sa représentation binaire
 
@@ -36,7 +34,6 @@ def repr_bin_str(c:str):
         str: représentation binaire de c 
     """
     return format((ord(c)),'07b')
-
 
 def codage_binaire(chaine:str):
     """converti une chaine en une représentation bianire 
@@ -70,7 +67,6 @@ def uniforme(bit:str,proba:int):
         else:
             return '0'
     return bit
-
 
 def random_change(message:str,loi:str,proba:int,period:int=0,taille_burst:int=0):
     """modélise un canal bruité 
@@ -109,8 +105,6 @@ def random_change(message:str,loi:str,proba:int,period:int=0,taille_burst:int=0)
         i=i+1
     return message 
 
-
-
 def est_puissance_de_2(n:int):
     """vérifie si n est une puissance de 2
 
@@ -122,7 +116,7 @@ def est_puissance_de_2(n:int):
     """
     return n > 0 and (n & (n - 1)) == 0 # & et bit a bit
 
-def decoupage_puissance_2(chaine:str,m:int):  # à vérifier pour ' '
+def decoupage_puissance_2(chaine:str,m:int):  
     """découpe un str en bloc de taille 2^m et rajoute des bits de parité pour correspondre au codage de hamming
 
     Args:
@@ -175,12 +169,8 @@ def decoupage_puissance_2(chaine:str,m:int):  # à vérifier pour ' '
                 t[h]=c
             h=h+1
     return t 
-m= codage_binaire("This is a simple ASCII code")
-#print(m)
-#print(len(m))
-#print(decoupage_puissance_2(m,4))
-     
 
+     
 def calculate_parity_positions(r:int):
     """renvoie les positions des bits de parité dans un code de hamming
 
@@ -198,7 +188,6 @@ def calculate_parity_positions(r:int):
             if (i & (2**(p - 1))): 
                 parity_positions[p].append(i)
     return parity_positions
-
 
 def xor_bit(c1:str,c2:str):
     """xor
@@ -221,8 +210,6 @@ def xor_bit(c1:str,c2:str):
         else:
             return '0'
 
-
-
 def parity_pos(pos:list,message:str):
     """renvoie la somme (xor) des positions des bits '1' dans le message cela permet de trouver la valeur du bits de parité hamming
 
@@ -237,7 +224,6 @@ def parity_pos(pos:list,message:str):
     for elt in pos:
         c = xor_bit(c,message[elt])
     return c
-
 
 def redondance(message:str,m:int):
     """donne une valeurs aux bits de redondance
@@ -272,8 +258,6 @@ def detecteur_1(message:str,m:int):
     else:
         return '1'+message[1:]
 
-
-
 def position_erreur(message:str):
     """trouve la position de l'erreur si il n'y en a qu'une
     sinon renvoie 0 (ce bit est utilisé pour 2 détecteur)
@@ -303,8 +287,6 @@ def correction_erreur(message:str):
     if i == 0 or i>=len(message):
         return message
     return modifie_i_eme(message,i,uniforme(message[i],1))
-
-
 
 def hamming_encoding(message:str,m:int):
     """codage de hamming du message avec des decoupages de taille 2^m
@@ -341,7 +323,6 @@ def position_not_p2(m:int):
             pos.append(i)
     return pos
 
-
 def hamming_decoding(l:list):
     """decode un message qui a subit une transformation de hamming
 
@@ -375,7 +356,6 @@ def hamming_decoding(l:list):
                 m=m+ chr(asci_i)
     return m
 
-
 #Reed-Solomon
 
 def float64_to_bin(value):
@@ -408,9 +388,6 @@ def bin64_to_float(binary):
 
     # Appliquer le signe
     return -valeur if signe else valeur
-
-
-
 
 def valeur_str(chaine:str):
     """
@@ -451,9 +428,6 @@ def inverse_valeur_str(v: int,p:int):
     
     return chaine.ljust(p, "0")  # Complète avec des zéros à droite jusqu'à 14 caractères
 
-
-
-
 def decoupage_taille_p(message:str,p:int):
     """découpe un str en bloc de taille p 
 
@@ -478,7 +452,6 @@ def decoupage_taille_p(message:str,p:int):
         l.append(message[(p)*q+q:])
     return l 
 
-
 def encodage_reed_solomon(message:str,redondance:int,p:int):
     message=codage_binaire(message) # codage binaire
     l = decoupage_taille_p(message,p) # découpage pour valeurs des polynomes
@@ -498,8 +471,6 @@ def encodage_reed_solomon(message:str,redondance:int,p:int):
         #assert(abs(P(m+r))<=2**64)
         l.append(P(m+r))#float64_to_bin(P(m+r)))
     return l 
-
-
 
 def correction_perte(l,k):
     n = len(l)
@@ -528,7 +499,7 @@ def correction_perte(l,k):
                 x.append(x_points[compteur])
                 y.append(y_values[compteur])
             else:
-                x.append(x_points[compteur]+m)
+                x.append(x_points[compteur]+m-compteur+dec)
                 y.append(y_values[n-k+dec])
                 dec+=1
             compteur+=1
@@ -584,9 +555,6 @@ def retrouvemessageascii(l,p):
         message+=chr(int(mm,2))
     mm=''.join([elt for elt in message if elt!='\x00' and elt!='\n' and elt!='\x0c' and elt!='\x05' and elt!='\x0b'])
     return mm
-        
-            
-            
             
 def random_disapear(l,proba:int):
     """probabilité de perdre le contenu d'un elt de la liste
@@ -603,7 +571,6 @@ def random_disapear(l,proba:int):
         if random() < 1/proba : 
             l[i]=''
     return l
-
 
 def test_RS(m:str,int:int,proba:int,redondance:int):
     """_summary_
@@ -631,18 +598,6 @@ def test_RS(m:str,int:int,proba:int,redondance:int):
             print(i)
     return c 
 
-m='This is a simple ASCII text '
-'''l1=(encodage_reed_solomon(m,3,n))
-print(l1)
-print(retrouvemessageascii(l1,n))
-l2=(correction_perte(l1,3))
-print(l2)
-print(retrouvemessageascii(l2,n))'''
-n=len(codage_binaire(m))//15 +1 # en modifiant la taille de m ou cette ligne ça marche pas
-#print(test_RS(m,1000,1000,3))
-
-
-
 def test_sans_cor(m:str,int:int,proba:int):
     """_summary_
 
@@ -661,7 +616,6 @@ def test_sans_cor(m:str,int:int,proba:int):
         if mm==m:
             c=c+1
     return c 
-
 
 def test_hamming(m:str,int:int,taille:int,proba:int,perte:int):
     """fonction de test du codage de hamming dans un canal bruité
@@ -692,7 +646,7 @@ def test_hamming(m:str,int:int,taille:int,proba:int,perte:int):
             c=c+1
     return c
 
-def entrelacement(l: list[int], p: int = 16) -> list[int]:
+def entrelacement(l: list, p: int = 16):
     """
     Entrelace les bits de la liste `l` par blocs de `p` bits.
     Chaque bloc est vu comme une ligne, et l'entrelacement se fait colonne par colonne.
@@ -713,7 +667,6 @@ def entrelacement(l: list[int], p: int = 16) -> list[int]:
         new_l.append(l[i])
     return new_l
 
-
 message='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
 l1=[''.join([chr(j) for i in range(16)]) for j in range(97,97+16)]
 l2=[''.join(format(j,'016b') ) for j in range(16)]
@@ -721,8 +674,14 @@ l1= l1 + l1
 #print(l1)
 #print(entrelacement(l1))
 #print(entrelacement(entrelacement(l1)))
+def perte_random(l):
+    n = len(l)
+    j=choice([i for i in range(n)])
+    l[j]=''.join(['0' for i in range(len(l[j]))])
+    return l
+    
 assert entrelacement(entrelacement(l1))==l1
-assert message == hamming_decoding(entrelacement(entrelacement(hamming_encoding(message,4))))
+assert message == hamming_decoding(entrelacement(perte_random(entrelacement(hamming_encoding(message,4)))))
 #01010000111110100
 
 
@@ -735,111 +694,37 @@ assert message == hamming_decoding(entrelacement(entrelacement(hamming_encoding(
 #print(time()-t1)
 # test niveau temps
 
-'''
+
 # test 2**m avec m qui change pour hamming
-m='Hello! This is a simple ASCII text with numbers 1234567890 and symbols: @#$%^&*()-_=+[]{};:,.<>?'
-print(len(codage_binaire(m)))
-l=hamming_encoding(m,3)
-print(len((l)))
-x_values=[3,4,5,6,7,8,9,10]
-y_values=[]
-mp = test_sans_cor(m,1000,500)
-print(mp)
-yy_values=[mp for i in range(len(x_values))]
-time_values=[]
-t1=time()
-for i in range(len(x_values)):
-    y_values.append(test_hamming(m,1000,x_values[i],500,0))
-    t2=time()
-    time_values.append(100*(t2-t1))
-    t1=t2
-    print(i)
-plt.scatter(x_values,y_values) # bleu
-plt.scatter(x_values,yy_values) # bleu
-plt.show()'''
+def hamming_pour_different_n():
+    m='Hello! This is a simple ASCII text with numbers 1234567890 and symbols: @#$%^&*()-_=+[]{};:,.<>?'
+    print(len(codage_binaire(m)))
+    l=hamming_encoding(m,3)
+    print(len((l)))
+    x_values=[3,4,5,6,7,8]
+    y_values=[]
+    mp = test_sans_cor(m,1000,500)
+    print(mp)
+    yy_values=[mp for i in range(len(x_values))]
+    time_values=[]
+    t1=time()
+    for i in range(len(x_values)):
+        y_values.append(test_hamming(m,1000,x_values[i],500,0))
+        print(i)
+    plt.scatter(x_values,y_values) # bleu
+    plt.xlabel(" valeur de n")
+    plt.scatter(x_values,yy_values) # bleu
+    plt.ylabel(" nombre de message correctement retrouvé")
+    plt.grid()
+    plt.show()
 
-
-"""
-# test m=4 et on augmente la taille du message
-m='Hello! This is a simple ASCII text with numbers 1234567890 and symbols: @#$%^&*()-_=+[]{};:,.<>?'
-print(test_hamming(m,100,4,100,0))
-x_values=[]
-y_values=[]
-yy_values=[]
-yyy_values=[]
-rh=[]
-rsc=[]
-y_sanc_cor=0
-y_h=0
-t1=time()
-for i in range(0,1000,20):
-    y_h+=test_hamming(m,20,3,100,0)
-    y_sanc_cor+=test_sans_cor(m,20,100)
-    x_values.append(i)
-    y_values.append(y_h)
-    yy_values.append(y_sanc_cor)
-    yyy_values.append(i)
-    t2=time()
-    t1=t2
-    #print(i)
-plt.scatter(x_values,y_values) # bleu
-plt.scatter(x_values,yy_values)
-plt.scatter(x_values,yyy_values)
-print(len(codage_binaire(m)))
-print(y_values[-1]/1000)
-print(yy_values[-1]/1000)
-plt.show()"""
+#hamming_pour_different_n()
 
 #  test niveau taille avec n=4 
-
-"""# test corruption de donnée (marche pas)
-print(len(codage_binaire(m)))
-message='This is a simple ASCII text '
-x_values=[i for i in range(4)]
-y_values=[]
-yy_values=[]
-yyy_values=[]
-time_values=[]
-t1=time()
-t0=time()
-for i in range(len(x_values)):
-    y_values.append(test_hamming(message,100*i,8,400)) # -> une chance sur 100 pour un bloc de taille 16
-    yy_values.append(test_sans_cor(message,100*i,100))
-    yyy_values.append(test_RS(message,100*i,156,3))
-    t2=time()
-    time_values.append(100*(t2-t1))
-    t1=t2
-    print(i)
-    
-    
-print(time()-t0)
-plt.scatter(x_values,yy_values) # bleu
-plt.scatter(x_values,y_values) #orange
-plt.scatter(x_values,yyy_values) #vert
-plt.scatter(x_values,[100*i for i in range(len(x_values))]) # rouge
-#plt.scatter(x_values,time_values)
-plt.show()"""
-
-""" Test perte de donné 
-message='This is a simple ASCII text '
-print(len(codage_binaire(message)))
-n=len(codage_binaire(m))//15 + 1 
-l=hamming_encoding(message,6)
-ll=encodage_reed_solomon(message,3,n)
-print(len(l))
-print(len(ll))
-print('test')
-print(1000-test_hamming(message,1000,6,100,1))#151
-print(1000-test_RS(message,1000,100*9/2,3))#19 block de taille plus faible donc plus de proba d'alterner moduler pour cette cause
-""" 
-
 
 
 """ les tailles des burst modifiées peuvvent variée de qlq bits à qlq centaines"""
 #fibres qq dizaines maxes
-
-
-
 
 # proba que sur des blocs de 16 avec une proba d'erreurs de 1/100 on est 2 erreurs : 0.0109
 # proba que sur des blocs de 32 avec une proba d'erreurs de 1/200 on est 2 erreurs : 0.0112
@@ -885,34 +770,68 @@ def test_hamming_entrelace(m:str,int:int,taille:int,proba:int): # ça marche
     return c
 
 
-message='This is a simple ASCII text '
-print(len(decoupage_puissance_2(message,4)))
-print(test_hamming_entrelace(message,100,4,10)) 
+def Hamming_vs_Reed_Solomon():
+    message_h='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
+    print(len(decoupage_puissance_2(message,4)))
+    print(test_hamming_entrelace(message,100,4,10)) 
 
-message='This is a simple ASCII text '
-#print(len(codage_binaire(message)))
-n=len(codage_binaire(m))//15 + 1 
-l=hamming_encoding(message,3)
-ll=encodage_reed_solomon(message,3,n)
-print(len(l))
-print(len(ll))
-print('test')
-x_values=[]
-y_values=[]
-yy_values=[]
-t0=time()
-nb=1000
-redondance_RS=3
-taille_hamming=4
-for i in range(int(nb/100)):
-    print(i)
-    x_values.append(i)
-    y_values.append(nb-test_hamming_entrelace(message,nb,taille_hamming,4))#18 block de taille 16
-    yy_values.append(nb-test_RS(message,nb,16,redondance_RS))#18 block de taille 64
-print(sum(y_values)/len(y_values))
-print(sum(yy_values)/len(yy_values))
-plt.scatter(x_values,y_values)
-plt.scatter(x_values,yy_values)
-plt.grid()
-plt.show()
-# plt.grid() -> avant le plt.show(
+    message_RS='This is a simple ASCII text '
+    #print(len(codage_binaire(message)))
+    n=len(codage_binaire(message_RS))//15 + 1 
+    l=hamming_encoding(message_h,6)
+    ll=encodage_reed_solomon(message_RS,3,n)
+
+    print(len(l))
+    print(len(ll))
+    print('test')
+    x_values=[]
+    y_values=[]
+    yy_values=[]
+    t0=time()
+    nb=1000
+    redondance_RS=3
+    taille_hamming=6
+    for i in range(int(nb/100)):
+        print(i)
+        x_values.append(i)
+        y_values.append(nb-test_hamming_entrelace(message_h,nb,taille_hamming,16))#18 block de taille 16
+        yy_values.append(nb-test_RS(message_RS,nb,16,redondance_RS))#18 block de taille 64
+    print(sum(y_values)/len(y_values))
+    print(sum(yy_values)/len(yy_values))
+    plt.scatter(x_values,y_values)
+    plt.scatter(x_values,yy_values)
+    plt.ylabel(" nombre de message correctement retrouvé")
+    plt.grid()
+    plt.show()
+    # plt.grid() -> avant le plt.show(
+
+#Hamming_vs_Reed_Solomon()
+# test valeur de RS
+
+def Reed_Solomon_different_k():
+    message='This is a simple ASCII text '
+    m='This is a simple ASCII text '
+    #print(len(codage_binaire(message)))
+    n=len(codage_binaire(m))//15 + 1 
+    ll=encodage_reed_solomon(message,3,n)
+    print(len(ll))
+    print('test')
+    x_values=[]
+    y_values=[]
+    t0=time()
+    nb=10000
+    redondance_RS=0 # i 
+    for i in range(0,6):
+        print(i)
+        x_values.append(i)
+        y_values.append(test_RS(message,nb,50,i))#18 block de taille 64
+    print(sum(y_values)/len(y_values))
+    plt.scatter(x_values,y_values)
+    plt.xlabel("valeur de k")
+    plt.ylabel(" nombre de message correctement retrouvé")
+    plt.grid()
+    plt.show()
+    
+Reed_Solomon_different_k()
+
+
