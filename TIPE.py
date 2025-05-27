@@ -88,7 +88,7 @@ def random_change(message:str,loi:str,proba:int,period:int=0,taille_burst:int=0)
     n = len(message)
     i=0
     while i < n : 
-        if loi == 'uniforme' : 
+        if loi == 'uniforme' :
             message = modifie_i_eme(message,i,uniforme(message[i],proba))
         elif loi == 'periodique':
             assert period>0 
@@ -259,12 +259,11 @@ def detecteur_1(message:str,m:int):
         return '1'+message[1:]
 
 def position_erreur(message:str):
-    """trouve la position de l'erreur si il n'y en a qu'une
-    sinon renvoie 0 (ce bit est utilisé pour 2 détecteur)
-
+    """
+    trouve la position de l'erreur si il n'y en a qu'une
+    sinon renvoie 0 
     Args:
         message (str): str
-
     Returns:
         int: indice de l'erreur
     """
@@ -674,25 +673,19 @@ l1= l1 + l1
 #print(l1)
 #print(entrelacement(l1))
 #print(entrelacement(entrelacement(l1)))
+
 def perte_random(l):
     n = len(l)
-    j=choice([i for i in range(n)])
+    j=randint(1,n-1)
     l[j]=''.join(['0' for i in range(len(l[j]))])
     return l
     
+m='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text aaaaa'
+
 assert entrelacement(entrelacement(l1))==l1
-assert message == hamming_decoding(entrelacement(perte_random(entrelacement(hamming_encoding(message,4)))))
-#01010000111110100
+assert m == hamming_decoding(entrelacement(entrelacement(hamming_encoding(m,4))))
+assert m == hamming_decoding(entrelacement(perte_random(entrelacement(hamming_encoding(m,4))))) # si 16 | len(hamming_encoding(m,4))
 
-
-# une chance sur 1000 d'erreur uniforme avec bloc de taille 16 -> 9985
-#(testsurtaphrasemignongne) 16 -> 9976 32 -> 9944 64->9891 128->9770 256->9391 512->9071
-# proba 100 -> (512 -> 360(36secondes) 256(32secondes),16->7637(21secondes) )
-#t1=time()
-#print(len(m))
-#print(test_hamming(m,10000,4,100))
-#print(time()-t1)
-# test niveau temps
 
 
 # test 2**m avec m qui change pour hamming
@@ -703,17 +696,16 @@ def hamming_pour_different_n():
     print(len((l)))
     x_values=[3,4,5,6,7,8]
     y_values=[]
+    m='Hello! This is a simple ASCII text with numbers'
+    m=m+'1234567890 and symbols: @#$%^&*()-_=+[]{};:,.<>?'
     mp = test_sans_cor(m,1000,500)
-    print(mp)
     yy_values=[mp for i in range(len(x_values))]
-    time_values=[]
-    t1=time()
     for i in range(len(x_values)):
         y_values.append(test_hamming(m,1000,x_values[i],500,0))
         print(i)
-    plt.scatter(x_values,y_values) # bleu
+    plt.scatter(x_values,y_values) # points bleu
     plt.xlabel(" valeur de n")
-    plt.scatter(x_values,yy_values) # bleu
+    plt.scatter(x_values,yy_values) #points orange
     plt.ylabel(" nombre de message correctement retrouvé")
     plt.grid()
     plt.show()
@@ -721,18 +713,6 @@ def hamming_pour_different_n():
 #hamming_pour_different_n()
 
 #  test niveau taille avec n=4 
-
-
-""" les tailles des burst modifiées peuvvent variée de qlq bits à qlq centaines"""
-#fibres qq dizaines maxes
-
-# proba que sur des blocs de 16 avec une proba d'erreurs de 1/100 on est 2 erreurs : 0.0109
-# proba que sur des blocs de 32 avec une proba d'erreurs de 1/200 on est 2 erreurs : 0.0112
-# proba que sur des blocs de 64 avec une proba d'erreurs de 1/400 on est 2 erreurs : 0.0114
-
-
-
-#reed solomon même proba 
 
 # test entrelacement Hamming vs RS 
 
@@ -772,41 +752,37 @@ def test_hamming_entrelace(m:str,int:int,taille:int,proba:int): # ça marche
 
 def Hamming_vs_Reed_Solomon():
     message_h='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
-    print(len(decoupage_puissance_2(message,4)))
-    print(test_hamming_entrelace(message,100,4,10)) 
-
     message_RS='This is a simple ASCII text '
     #print(len(codage_binaire(message)))
     n=len(codage_binaire(message_RS))//15 + 1 
     l=hamming_encoding(message_h,6)
     ll=encodage_reed_solomon(message_RS,3,n)
-
     print(len(l))
     print(len(ll))
-    print('test')
-    x_values=[]
-    y_values=[]
-    yy_values=[]
-    t0=time()
-    nb=1000
-    redondance_RS=3
+    #print('test')
+    nb=100
+    redondance_RS=6
     taille_hamming=6
-    for i in range(int(nb/100)):
-        print(i)
-        x_values.append(i)
-        y_values.append(nb-test_hamming_entrelace(message_h,nb,taille_hamming,16))#18 block de taille 16
-        yy_values.append(nb-test_RS(message_RS,nb,16,redondance_RS))#18 block de taille 64
-    print(sum(y_values)/len(y_values))
-    print(sum(yy_values)/len(yy_values))
-    plt.scatter(x_values,y_values)
-    plt.scatter(x_values,yy_values)
+    
+    nh=test_hamming_entrelace(message_h,nb,taille_hamming,20)
+    nrs=test_RS(message_RS,nb,20,redondance_RS)
+    categories = ['Hamming' , 'Reed-Solomon']
+    values= [nh,nrs]
+    colors=['blue','red']
+    print(values)
+    plt.bar(categories,values,color=colors)
+    plt.ylim(0,nb)
+    plt.xlabel("")
     plt.ylabel(" nombre de message correctement retrouvé")
     plt.grid()
     plt.show()
-    # plt.grid() -> avant le plt.show(
+
+        
+Hamming_vs_Reed_Solomon()
 
 #Hamming_vs_Reed_Solomon()
 # test valeur de RS
+
 
 def Reed_Solomon_different_k():
     message='This is a simple ASCII text '
@@ -818,13 +794,12 @@ def Reed_Solomon_different_k():
     print('test')
     x_values=[]
     y_values=[]
-    t0=time()
-    nb=10000
-    redondance_RS=0 # i 
-    for i in range(0,6):
+    nb=1000
+    m='This is a simple ASCII text '
+    for i in range(0,5):
         print(i)
         x_values.append(i)
-        y_values.append(test_RS(message,nb,50,i))#18 block de taille 64
+        y_values.append(test_RS(message,nb,50,i))
     print(sum(y_values)/len(y_values))
     plt.scatter(x_values,y_values)
     plt.xlabel("valeur de k")
@@ -832,6 +807,6 @@ def Reed_Solomon_different_k():
     plt.grid()
     plt.show()
     
-Reed_Solomon_different_k()
+#Reed_Solomon_different_k()
 
 
