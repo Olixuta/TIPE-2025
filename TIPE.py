@@ -666,7 +666,10 @@ def entrelacement(l: list, p: int = 16):
         new_l.append(l[i])
     return new_l
 
-message='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
+message='This is a simple ASCII text '
+n=len(codage_binaire(message))//15 + 1 
+print(len(hamming_encoding(message,6))* len(hamming_encoding(message,6)[0]))
+print(len(encodage_reed_solomon(message,4,n))* 64)
 l1=[''.join([chr(j) for i in range(16)]) for j in range(97,97+16)]
 l2=[''.join(format(j,'016b') ) for j in range(16)]
 l1= l1 + l1
@@ -750,7 +753,7 @@ def test_hamming_entrelace(m:str,int:int,taille:int,proba:int): # ça marche
     return c
 
 
-def Hamming_vs_Reed_Solomon():
+def Hamming_vs_Reed_Solomon_1():
     message_h='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
     message_RS='This is a simple ASCII text '
     #print(len(codage_binaire(message)))
@@ -778,7 +781,7 @@ def Hamming_vs_Reed_Solomon():
     plt.show()
 
         
-Hamming_vs_Reed_Solomon()
+#Hamming_vs_Reed_Solomon_1()
 
 #Hamming_vs_Reed_Solomon()
 # test valeur de RS
@@ -810,3 +813,32 @@ def Reed_Solomon_different_k():
 #Reed_Solomon_different_k()
 
 
+def Hamming_vs_Reed_Solomon_2():
+    message_h='This is a simple ASCII text '
+    message_RS='This is a simple ASCII text '
+    #print(len(codage_binaire(message)))
+    n=len(codage_binaire(message_RS))//15 + 1 
+    l=hamming_encoding(message_h,6)
+    ll=encodage_reed_solomon(message_RS,3,n)
+    print(len(l))
+    print(len(ll))
+    #print('test')
+    nb=10000
+    redondance_RS=6
+    taille_hamming=6
+    
+    nh=test_hamming_entrelace(message_h,nb,taille_hamming,20)
+    nrs=test_RS(message_RS,nb,20,redondance_RS)
+    categories = ['Hamming' , 'Reed-Solomon']
+    values= [nh,nrs]
+    colors=['blue','red']
+    print(values)
+    plt.bar(categories,values,color=colors)
+    plt.ylim(0,nb)
+    plt.xlabel("")
+    plt.ylabel(" nombre de message correctement retrouvé")
+    plt.grid()
+    plt.show()
+
+        
+Hamming_vs_Reed_Solomon_2()
