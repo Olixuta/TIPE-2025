@@ -148,6 +148,7 @@ def correction_perte(l,k):#plus que cette fonction
     x_points=np.array([i for i in range(n-k)])
     for i in range(m,n-k):
         x_points[i]+=k
+    print(x_points)
     x_values=[i for i in range(n)]
     #print(x_values)
     #print(x_points)
@@ -160,7 +161,7 @@ def correction_perte(l,k):#plus que cette fonction
         else:
             c=c+1
     if c>k:
-        return 'rip'
+        return [] # pas possible
     else:
         x=[]
         y=[]
@@ -171,19 +172,33 @@ def correction_perte(l,k):#plus que cette fonction
                 x.append(x_points[compteur])
                 y.append(y_values[compteur])
             else:
-                x.append(x_points[compteur]+m)
+                print('   ')
+                print(dec)
+                print(compteur)
+                print(n-k+dec)
+                x.append(x_points[compteur]+m-compteur+dec) # -1 car l[1]='' etc voir pouquoi sauf que ça marche plus avec plusieurs erreurs
                 y.append(y_values[n-k+dec])
                 dec+=1
             compteur+=1
         #print(x)
         #print(y)
+        print(x)
+        print(y)
+        if 'False' in y:
+            return [] # pas possible
         P=lagrange(x,y)###
         #print(P)
         l_message=['' for i in range(n-k)]###on retrouve le message originale
         m=(n-k)//2
         i=0
         j=0
+        print('t')
+        print(x_points)
+        print(x)
         while i<n:
+            #print(x_points)
+            #print(j)
+            #print(x_points[j])
             l_message[j]=(np.rint((P(x_points[j]))))#normalement np.rint
             #"print(type(l_message[i]))# chr(valeur_str(float64_to_bin
             if i+1 ==m:
@@ -196,6 +211,7 @@ def correction_perte(l,k):#plus que cette fonction
         return l_message 
     
 def retrouvemessageascii(l,p):
+    print(l)
     nn=len(l)
     n = p*nn
     m=n//7
@@ -255,12 +271,21 @@ def test_RS(m:str,int:int,proba:int,redondance:int):
             print(i)
     return c 
 
+redondance=3
+
 m='This is a simple ASCII text '
-'''l1=(encodage_reed_solomon(m,3,n))
-print(l1)
-print(retrouvemessageascii(l1,n))
-l2=(correction_perte(l1,3))
-print(l2)
-print(retrouvemessageascii(l2,n))'''
+n=len(codage_binaire(m))//15 +1 
+l1=(encodage_reed_solomon(m,redondance,n)) # rajoute 3 paquets 
+l1[3]='' # perte de la partie 1 et 2 du message
+l1[2]=''
+l1[1]='' # 
+#l1[2]=''
+l2=(correction_perte(l1,redondance))
+message =retrouvemessageascii(l2,n)
+assert message == m
 n=len(codage_binaire(m))//15 +1 # en modifiant la taille de m ou cette ligne ça marche pas
-print(test_RS(m,100,1000,3))
+
+#print(test_RS(m,100,10,3))
+#print(test_RS(m,100,1000,3))
+#print(l1)
+#print(l2)
