@@ -1,39 +1,12 @@
 #Reed-Solomon
 
+import operator as op
+from random import randint,random,choice
+from matplotlib import pyplot as plt
+from time import time 
 import numpy as np
 from scipy.interpolate import lagrange
-import struct
-import numpy as np
-from random import random
-
-
-def repr_bin_str(c:str):
-    """converti un charactère en sa représentation binaire
-
-    Args:
-        c (str): un str de taille 1 
-
-    Returns:
-        str: représentation binaire de c 
-    """
-    return format((ord(c)),'07b')
-
-
-def codage_binaire(chaine:str):
-    """converti une chaine en une représentation bianire 
-
-    Args:
-        chaine (str): 
-
-    Returns:
-        str: concaténation de la représentation binaire de chacun des caractère de la chaine en entrée 
-    """
-    c=''
-    for elt in chaine:
-        c=c + repr_bin_str(elt)
-    return c
-
-
+import struct 
 
 
 def decoupage_taille_p(message:str,p:int):# yes
@@ -53,27 +26,9 @@ def decoupage_taille_p(message:str,p:int):# yes
         l.append(message[(p)*q+q:])# le dernier est 
     return l 
 
-m= 'This is a simple ASCII text '
-n = len(m)
-print(decoupage_taille_p(m,n))
-
-#inverse = pow(a, -1, 131)
-
-def evaluation_li(i,x_values,eval,modulo=131):
-    yi = 1 
-    n=len(x_values)
-    for j in range(n):
-        if j!=i:
-            yi = (yi * ((eval-x_values[j])%modulo) * (pow(x_values[i]-x_values[j],-1,modulo)%modulo))%modulo  # non inveerse modulo 7
-    return yi % modulo
-    
-def lagrange(x,y,eval,modulo=131):
-    assert len(x)==len(y)
-    p_eval = 0 
-    n = len(y)
-    for i in range(n):
-        p_eval =( p_eval + (y[i] % modulo)* evaluation_li(i,x,eval,modulo) ) % modulo 
-    return p_eval
+m= 'This is a simple ASCII code '
+n=len(m)
+print(decoupage_taille_p(m,int(n/2)))
     
     
     
@@ -94,7 +49,7 @@ def poly_mul(p1, p2, modulo):
             result[i + j] = (result[i + j] + p1[i] * p2[j]) % modulo
     return result
 
-def lagrange_poly(x, y, modulo):
+def lagrange_poly(x, y, modulo=131):
     n = len(x)
     final_poly = [0]
 
@@ -138,32 +93,142 @@ def format_polynomial(coeffs, modulo):
     return " + ".join(terms[::-1]) + f"  (mod {modulo})"
 
 
-x= [1,2,3,4]
-y =[3,1,5,0]
-print(lagrange(x,y,5,7))
-p = lagrange_poly(x,y,7)
-print(format_polynomial(p,7))
-
-x= [2,3,4,5]
-y =[1,5,0,6]
-print(lagrange(x,y,1,7))
-p=lagrange_poly(x,y,7)
-print(format_polynomial(p,7))
+def eval_poly(coeffs, x, modulo):
+    result = 0
+    for coef in reversed(coeffs):
+        result = (result * x + coef) % modulo
+    return result
 
 
-# a modif 
-def encodage_reed_solomon(message:str,redondance:int,p:int):
+
+def encodage_reed_solomon_fini(message:str,redondance:int,modulo=131):# ok
     n = len(message)
     l = decoupage_taille_p(message,n)
-    ll=[ 0 for i in range(m+redondance)]
-    m = len(m)
-    x_points=[i for i in range(m)]
+    ll=[ 0 for i in range(n+redondance)]
+    x_points=[i for i in range(n)] # i+1 pour le test de la source
     y_points=[ord(message[i]) for i in range(n)]
+    #print('le message ascii')
+    #print(y_points)
+    for i in range(n):
+        ll [i]=y_points[i]
 
-    P=lagrange_poly(x_points,y_points,131)
+    P=lagrange_poly(x_points,y_points,modulo)
+    #print(P)
     for r in range(redondance):
         #print(P(m+r))
         #assert(abs(P(m+r))<=2**15)
-        l.append(P(m+r))
+        ll[n+r]=eval_poly(P,n+r,modulo)
 
-    return l 
+    return ll 
+
+
+
+def correction_perte_fini(l,k,modulo=131):
+    n = len(l)
+    x_points=([i for i in range(n)])
+    y_values=['False' for i in range(n)]
+    c=0
+    for i in range(n):# on retrouve les valuers non perdues
+        if l[i]!='':
+            y_values[i]=(l[i]) 
+        else:
+            c=c+1
+    if c>k:
+        return [] # pas possible
+    else:
+        x=[]
+        y=[]
+        dec=0
+        compteur=0
+        while compteur<n-k:
+            if y_values[compteur]!='False':
+                x.append(x_points[compteur])
+                y.append(y_values[compteur])
+            else:
+                x.append(x_points[n-k+dec])
+                y.append(y_values[n-k+dec])
+                dec+=1
+            compteur+=1
+        if 'False' in y:
+            return [] # pas possible
+        P=lagrange_poly(x,y,modulo)
+        l_message=['' for i in range(n-k)]
+        j=0
+        while j<n-k:
+            l_message[j]=eval_poly(P,x_points[j],modulo)
+            j=j+1
+        return l_message 
+    
+def decodage_ascii_fini(l):
+    m = ''
+    for elt in l:
+        m+=chr(elt)
+    return m
+
+
+ll=encodage_reed_solomon_fini('This is a simple ASCII code ',4,131)
+print(len(ll))
+print(ll)
+print(ll)
+ll[0]=''
+ll[1]=''
+ll[2]=''
+l3= correction_perte_fini(ll,4,131)
+print(l3)
+print(decodage_ascii_fini(l3))
+
+def random_disapear(l,proba:int):
+    """probabilité de perdre le contenu d'un elt de la liste
+    """
+    n = len(l)
+    for i in range(n) : 
+        if random() < 1/proba : 
+            l[i]=''
+    return l
+
+def test_RS_fini(m:str,int:int,proba:int,redondance:int):
+    """
+    Args:
+        m (str): message
+        int (int): nombre de fois que l'on test le procedé
+        taille (int): sur combien de bits utilisé hamming
+        proba (int): 1/proba = probabilité qu'un bits soit alteré (voir dans la fonction si uniforme ou pas)
+        redondance(int): nombre de redondance pour le polynome
+    
+    Returns:
+        int: nombre de transmission correcte 
+    """
+    c=0
+    for i in range(int):
+        l=encodage_reed_solomon_fini(m,redondance)
+        ll=random_disapear(l,proba) #probabilité d'enlever un bloc 
+        l2= correction_perte_fini(ll,redondance)
+        mm=decodage_ascii_fini(l2)
+        if mm==m:
+            c=c+1
+        if i%(int/10)==0 and False:
+            print(i)
+    return c 
+
+def Reed_Solomon_fini_different_k():
+    message='This is a simple ASCII text '
+    #print(len(codage_binaire(message)))
+    ll=encodage_reed_solomon_fini(message,3)
+    print(len(ll))
+    print('test')
+    x_values=[]
+    y_values=[]
+    nb=1000
+    for i in range(0,7):
+        print(i)
+        x_values.append(i)
+        y_values.append(test_RS_fini(message,nb,10,i))
+    plt.scatter(x_values,y_values)
+    plt.xlabel("valeur de k")
+    plt.ylabel(" nombre de message correctement retrouvé")
+    plt.grid()
+    plt.show()
+
+
+#Reed_Solomon_different_k()
+
