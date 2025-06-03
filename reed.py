@@ -176,7 +176,7 @@ def correction_perte(l,k):#plus que cette fonction
                 print(dec)
                 print(compteur)
                 print(n-k+dec)
-                x.append(x_points[compteur]+m-compteur+dec) # -1 car l[1]='' etc voir pouquoi sauf que ça marche plus avec plusieurs erreurs
+                x.append(m+dec) # -1 car l[1]='' etc voir pouquoi sauf que ça marche plus avec plusieurs erreurs
                 y.append(y_values[n-k+dec])
                 dec+=1
             compteur+=1
