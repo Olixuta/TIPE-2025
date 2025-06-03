@@ -59,7 +59,10 @@ def uniforme(bit:str,proba:int):
     """
     p = randint(1, proba)
     if p ==1 : 
-        return str(1-int(bit))
+        if bit=='1':
+            return '0'
+        else:
+            return '1'
     return bit
 
 def random_change(message:str,loi:str,proba:int,period:int=0,taille_burst:int=0):
@@ -159,7 +162,7 @@ def decoupage_puissance_2(chaine:str,m:int):
             if h<len(t) and len(t[h])<2**m : 
                 t[h]=c+'0'
             else:
-                t[h]=c
+                t[h]=c 
             h=h+1
     return t 
 
@@ -298,7 +301,7 @@ def hamming_encoding(message:str,m:int):
         l[i] = redondance(l[i],m) # calcul des bits de redondance
         l[i] = detecteur_1(l[i],m) # calcul du bit de dectection
     return l
-
+#print(position_erreur(hamming_encoding('',4)[0]))
 def position_not_p2(m:int):
     """pour un entier m donné renvoie un tableau contenant tous les entiers de 1 à m qui ne sont pas des puissances de 2
 
@@ -505,7 +508,7 @@ def correction_perte(l,k):
                 x.append(x_points[compteur])
                 y.append(y_values[compteur])
             else:
-                x.append(x_points[compteur]+m-compteur+dec)
+                x.append(m+dec)#x_points[compteur]+m-compteur+dec
                 y.append(y_values[n-k+dec])
                 dec+=1
             compteur+=1
@@ -900,7 +903,7 @@ def hamming_pour_different_n():
     print(len(codage_binaire(m)))
     l=hamming_encoding(m,3)
     print(len((l)))
-    x_values=[3,4,5,6,7,8]
+    x_values=[4,5,6,7,8]
     y_values=[]
     m='Hello! This is a simple ASCII text with numbers'
     m=m+'1234567890 and symbols: @#$%^&*()-_=+[]{};:,.<>?'
@@ -952,34 +955,6 @@ def test_hamming_entrelace(m:str,int:int,taille:int,proba:int):
     return c
 
 
-def Hamming_vs_Reed_Solomon_1():
-    message_h='This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text This is a simple ASCII text '
-    message_RS='This is a simple ASCII text '
-    n=len(codage_binaire(message_RS))//15 + 1 
-    l=hamming_encoding(message_h,6)
-    ll=encodage_reed_solomon(message_RS,3,n)
-    print(len(l))
-    print(len(ll))
-    nb=100
-    redondance_RS=6
-    taille_hamming=6
-    
-    nh=test_hamming_entrelace(message_h,nb,taille_hamming,20)
-    nrs=test_RS(message_RS,nb,20,redondance_RS)
-    categories = ['Hamming' , 'Reed-Solomon']
-    values= [nh,nrs]
-    colors=['blue','red']
-    print(values)
-    plt.bar(categories,values,color=colors)
-    plt.ylim(0,nb)
-    plt.xlabel("")
-    plt.ylabel("Nombre de messages correctement retrouvés")
-    plt.grid()
-    plt.show()
-
-        
-#Hamming_vs_Reed_Solomon_1()
-
 #Hamming_vs_Reed_Solomon()
 # test valeur de RS
 
@@ -995,7 +970,7 @@ def Reed_Solomon_different_k():
     y_values=[]
     nb=1000
     m='This is a simple ASCII text '
-    for i in range(0,5):
+    for i in range(0,4):
         print(i)
         x_values.append(i)
         y_values.append(test_RS(message,nb,50,i))
@@ -1009,7 +984,7 @@ def Reed_Solomon_different_k():
 #Reed_Solomon_different_k()
 
 
-def Hamming_vs_Reed_Solomon_2():
+def Hamming_vs_Reed_Solomon():
     message_h='This is a simple ASCII text '
     message_RS='This is a simple ASCII text '
     n=len(codage_binaire(message_RS))//15 + 1 
@@ -1035,7 +1010,7 @@ def Hamming_vs_Reed_Solomon_2():
     plt.show()
 
         
-#Hamming_vs_Reed_Solomon_2()
+Hamming_vs_Reed_Solomon()
 
 def Hamming_vs_Reed_Solomon_fini():
     message_h='This is a simple ASCII text '
@@ -1050,8 +1025,8 @@ def Hamming_vs_Reed_Solomon_fini():
     redondance_RS=5
     taille_hamming=3
     
-    nh=test_hamming_entrelace(message_h,nb,taille_hamming,20)
-    nrs=test_RS_fini(message_RS,nb,20,redondance_RS)
+    nh=test_hamming_entrelace(message_h,nb,taille_hamming,35.555)
+    nrs=test_RS_fini(message_RS,nb,35.555,redondance_RS)
     categories = ['Hamming' , 'Reed-Solomon']
     values= [nh,nrs]
     colors=['blue','red']
